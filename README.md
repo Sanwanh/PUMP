@@ -1,98 +1,52 @@
-# 抽水機監控系統
+# 抽水機監控系統修改說明
 
-這是一個用於監控抽水機狀態的系統，可以接收抽水機傳來的資料並提供JSON API。
+## 主要修改內容
 
-## 系統功能
+1. **JSON API 純顯示**
+   - 修改 `/json` 端點直接重定向到 `/api/json`，確保顯示純 JSON 格式資料
+   - 移除了複雜的 JSON 視圖頁面
 
-- 接收抽水機資料（位置、狀態、油位等）
-- 將資料保存到Excel檔案中
-- 提供JSON API介面
-- 根據Datalist.xlsx過濾顯示的抽水機
-- 提供網頁介面查看數據和JSON格式
+2. **新增 API 文件**
+   - 在 FastAPI 初始化時加入了 `docs_url` 和 `redoc_url` 參數
+   - 新增了 `/api-docs` 和 `/api-redoc` 端點，用於顯示 API 文檔
+   - 為所有 API 端點添加了詳細的文檔描述和參數說明
 
-## 安裝與設定
+3. **新增 HTTP 介面 (支援 SIM7000)**
+   - 新增 `/api/update` (POST) 端點接收抽水機資料
+   - 新增 `/api/simple-update` (GET) 端點，專為 SIM7000 等支援 HTTP 但不支援 WebSocket 的裝置設計
+   - 保留原有的 WebSocket 功能，確保兼容性
 
-### 系統需求
-
-- Python 3.9或更高版本
-- 相關Python套件（見requirements.txt）
-
-### 安裝步驟
-
-1. 克隆或下載此專案
-2. 安裝依賴套件：
-
-```bash
-pip install -r requirements.txt
-```
-
-3. 確保以下檔案存在：
-   - data.xlsx (若不存在會自動創建)
-   - Datalist.xlsx (可選，用於過濾顯示的抽水機)
+4. **簡化測試工具**
+   - 將測試工具簡化為三個主要功能：WebSocket、HTTP GET 和 HTTP POST
+   - 保留基本資料模型和隨機選擇功能
 
 ## 使用說明
 
-### 啟動系統
-
-```bash
-python main.py
-```
-
-系統會在 `http://localhost:7000` 啟動。
-
-### 網頁介面
-
-- 主頁 (`/`): 顯示所有抽水機資料表格
-- JSON視圖 (`/json-view`): 查看JSON格式的數據和統計資訊
-
-### API端點
+### API 端點
 
 - `/api/data`: 獲取原始資料表格
-- `/api/json`: 獲取轉換後的JSON格式數據
+- `/api/json`: 獲取轉換後的 JSON 格式資料
+- `/api/update`: 通過 POST 方法更新抽水機資料
+- `/api/simple-update`: 通過 GET 方法更新抽水機資料，適合 SIM7000 裝置
 
-### WebSocket接口
+### SIM7000 設備發送資料示例
 
-系統提供WebSocket接口接收抽水機數據：
-- WebSocket URL: `ws://localhost:7000/ws`
-- 數據格式範例:
-```json
-{
-  "longitude": 121.534,
-  "latitude": 25.0736,
-  "status": "1",
-  "d": "A33",
-  "e": "1",
-  "f": "12.5"
-}
+SIM7000 設備可以通過以下 HTTP GET 請求發送資料：
+
+```
+http://[您的伺服器網址]:7000/api/simple-update?lon=121.534&lat=25.0736&s=1&d=A33&e=1&f=12.5
 ```
 
-### 測試工具
+必要參數說明：
+- `lon`: 經度
+- `lat`: 緯度
+- `s`: 狀態代碼
+- `d`: 抽水機ID
+- `e`: 油位狀態 (選填)
+- `f`: 其他資料 (選填)
 
-使用測試工具發送模擬數據：
+### 查看 API 文件
 
-```bash
-python test_websocket.py
-```
-
-## 檔案結構
-
-- `main.py`: 主應用程式
-- `json_api.py`: JSON API服務
-- `pump_mappings.py`: 抽水機ID對應表
-- `test_websocket.py`: WebSocket測試工具
-- `data.xlsx`: 抽水機資料存儲
-- `Datalist.xlsx`: 抽水機ID清單
-- `templates/`: HTML模板
-  - `index.html`: 資料表視圖
-  - `json_view.html`: JSON視圖
-- `static/`: 靜態資源
-
-## 狀態代碼說明
-
-抽水機狀態對應表：
-- `0`: 離線
-- `1`: 待命
-- `2`: 運送中
-- `3`: 抽水中
-- `4`: 故障
-- `5`: 油位低電壓
+訪問以下網址查看完整 API 文件：
+- Swagger UI: `http://[您的伺服器網址]:7000/api-docs`
+- ReDoc: `http://[您的伺服器網址]:7000/api-redoc`

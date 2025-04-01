@@ -5,10 +5,6 @@ import os
 
 
 def get_pump_mapping():
-    """
-    返回抽水機編號（A系列）與其對應資訊的映射
-    此函數包含從PHP檔案轉換的對應關係
-    """
     pump_mappings = {
         "A1": {
             "id": "北市-09",
@@ -58,8 +54,6 @@ def get_pump_mapping():
             "road": "桃園市龜山區復興三路247巷30號",
             "town": "龜山區"
         },
-        # 新增其餘的對應關係，這裡只列出部分範例
-        # 您可以參考PHP檔案中的完整對應關係
         "A17": {
             "id": "花蓮縣-01",
             "city": "花蓮縣",
@@ -92,7 +86,7 @@ def get_pump_mapping():
             "road": "南投縣南投市嶺興路36號",
             "town": "南投縣"
         }
-    }
+}
 
     return pump_mappings
 

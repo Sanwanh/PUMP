@@ -1,5 +1,5 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -11,7 +11,13 @@ import json
 import uvicorn
 from pump_mappings import PUMP_MAPPING, STATUS_MAPPING
 
-app = FastAPI()
+app = FastAPI(
+    title="抽水機監控系統",
+    description="用於監控抽水機狀態的系統，可以接收抽水機傳來的資料並提供JSON API",
+    version="1.0.0",
+    docs_url="/api-docs",
+    redoc_url="/api-redoc",
+)
 
 
 # 設定檔案與資料夾路徑
@@ -136,8 +142,11 @@ async def read_data(request: Request):
 
 
 # 提供資料 API
-@app.get("/api/data")
+@app.get("/api/data", tags=["資料API"])
 async def get_data():
+    """
+    獲取原始抽水機資料表格
+    """
     df = load_data()
     if df.empty:
         df = pd.DataFrame([{col: "" for col in COLUMNS}])  # 空表時自動填一行空資料
@@ -145,8 +154,11 @@ async def get_data():
 
 
 # 提供JSON API (類似PHP的輸出)
-@app.get("/api/json")
+@app.get("/api/json", tags=["資料API"])
 async def get_json_api():
+    """
+    獲取轉換後的JSON格式數據，包含抽水機位置、狀態和相關資訊
+    """
     df = load_data()
     if df.empty:
         return []
@@ -155,13 +167,120 @@ async def get_json_api():
     return api_data
 
 
-# JSON資料顯示頁面
-@app.get("/json-view", response_class=HTMLResponse)
-async def json_view(request: Request):
-    return templates.TemplateResponse("json_view.html", {"request": request})
+# JSON資料顯示頁面 (純JSON顯示)
+@app.get("/json", response_class=RedirectResponse)
+async def json_redirect():
+    """
+    重定向到純JSON API頁面
+    """
+    return RedirectResponse(url="/api/json")
 
 
-# WebSocket 接收資料
+# 接收HTTP POST請求更新抽水機資料
+@app.post("/api/update", tags=["資料更新"])
+async def update_data(data: DataModel):
+    """
+    通過HTTP POST更新抽水機資料
+
+    - **longitude**: 經度
+    - **latitude**: 緯度
+    - **status**: 狀態代碼 (0-5)
+    - **d**: 抽水機ID (例如: A33)
+    - **e**: 油位 (1:正常, 0:低)
+    - **f**: 其他數值資料
+    """
+    try:
+        df = load_data()
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        # 創建新資料
+        new_entry = {
+            "經度": data.longitude,
+            "緯度": data.latitude,
+            "狀態": data.status,
+            "D": data.d,
+            "E": data.e,
+            "F": data.f,
+            "日期": current_date,
+            "時間": current_time,
+        }
+
+        # 檢查 D 欄位是否已存在
+        existing_entry = df[df["D"] == data.d] if not df.empty and "D" in df.columns else pd.DataFrame()
+
+        if not existing_entry.empty:
+            # 如果 D 已存在，更新該筆資料
+            index = existing_entry.index[0]
+            for key, value in new_entry.items():
+                df.at[index, key] = value
+            message = f"資料已更新: D={data.d}"
+        else:
+            # 如果 D 不存在，新增一筆資料
+            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+            message = f"資料已新增: D={data.d}"
+
+        # 儲存更新後的資料
+        save_data(df)
+        return {"status": "success", "message": message}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# 接收簡單的GET請求更新抽水機資料 (適合SIM7000等裝置)
+@app.get("/api/simple-update", tags=["資料更新"])
+async def simple_update(lon: float, lat: float, s: str, d: str, e: str = "0", f: str = "0"):
+    """
+    通過簡單的GET請求更新抽水機資料，適合SIM7000等裝置
+
+    - **lon**: 經度
+    - **lat**: 緯度
+    - **s**: 狀態代碼 (0-5)
+    - **d**: 抽水機ID (例如: A33)
+    - **e**: 油位 (1:正常, 0:低) (選填)
+    - **f**: 其他數值資料 (選填)
+    """
+    try:
+        df = load_data()
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        # 創建新資料
+        new_entry = {
+            "經度": lon,
+            "緯度": lat,
+            "狀態": s,
+            "D": d,
+            "E": e,
+            "F": f,
+            "日期": current_date,
+            "時間": current_time,
+        }
+
+        # 檢查 D 欄位是否已存在
+        existing_entry = df[df["D"] == d] if not df.empty and "D" in df.columns else pd.DataFrame()
+
+        if not existing_entry.empty:
+            # 如果 D 已存在，更新該筆資料
+            index = existing_entry.index[0]
+            for key, value in new_entry.items():
+                df.at[index, key] = value
+            message = f"資料已更新: D={d}"
+        else:
+            # 如果 D 不存在，新增一筆資料
+            df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+            message = f"資料已新增: D={d}"
+
+        # 儲存更新後的資料
+        save_data(df)
+        return {"status": "success", "message": message}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# WebSocket 接收資料 (保留原有功能)
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
