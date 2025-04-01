@@ -235,3 +235,77 @@
                 console.error('獲取API資料失敗:', error);
                 document.getElementById('json-view').textContent = '獲取資料失敗: ' + error.message;
             }
+        }
+        }
+
+        // 更新抽水機表格
+        function updatePumpTable(data) {
+            const tableBody = document.querySelector('#pump-table tbody');
+            tableBody.innerHTML = ''; // 清空表格
+
+            data.forEach(pump => {
+                const row = document.createElement('tr');
+
+                // 油位狀態
+                const oilStatus = pump._oil === "1" ? "正常" : "低/離線";
+
+                // 建立表格內容
+                row.innerHTML = `
+                    <td>${pump._id}</td>
+                    <td>${pump._city}</td>
+                    <td>${pump._town}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(pump._status)}">
+                            ${pump._status}
+                        </span>
+                    </td>
+                    <td>${oilStatus}</td>
+                    <td>${pump._road}</td>
+                    <td>${pump.operateat}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+            // 如果沒有資料，顯示提示訊息
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="7" style="text-align: center;">沒有可用的抽水機資料</td>';
+                tableBody.appendChild(row);
+            }
+        }
+
+        // 更新狀態統計
+        function updateStatusCount(data) {
+            const statusCountElement = document.getElementById('status-count');
+            statusCountElement.innerHTML = ''; // 清空統計區
+
+            // 計算各狀態數量
+            const statusCounts = {};
+            data.forEach(pump => {
+                if (!statusCounts[pump._status]) {
+                    statusCounts[pump._status] = 0;
+                }
+                statusCounts[pump._status]++;
+            });
+
+            // 建立狀態統計項目
+            for (const status in statusCounts) {
+                const statusItem = document.createElement('div');
+                statusItem.className = 'status-item';
+                statusItem.innerHTML = `
+                    <div class="status-dot" style="background-color: ${getStatusColor(status)}"></div>
+                    <div>${status}: ${statusCounts[status]} 台</div>
+                `;
+                statusCountElement.appendChild(statusItem);
+            }
+
+            // 總數
+            const totalItem = document.createElement('div');
+            totalItem.className = 'status-item';
+            totalItem.innerHTML = `<div>總計: ${data.length} 台</div>`;
+            statusCountElement.appendChild(totalItem);
+        }
+    </script>
+</body>
+</html>

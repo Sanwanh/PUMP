@@ -4,59 +4,13 @@ import pandas as pd
 import os
 from datetime import datetime
 import uvicorn
+from pump_mappings import PUMP_MAPPING, STATUS_MAPPING
 
 app = FastAPI()
 
 # 設定檔案路徑
 EXCEL_FILE = "data.xlsx"
 DATALIST_FILE = "Datalist.xlsx"
-
-# 抽水機狀態對應
-STATUS_MAPPING = {
-    "0": "離線",
-    "1": "待命",
-    "2": "運送中",
-    "3": "抽水中",
-    "4": "故障",
-    "5": "油位低電壓"
-}
-
-# 抽水機ID對應資訊
-PUMP_MAPPINGS = {
-    "A1": {
-        "id": "北市-09",
-        "city": "台北市",
-        "org": "68",
-        "org_name": "臺北市政府",
-        "road": "臺北市士林區延平北路7段106巷358號",
-        "town": "士林區"
-    },
-    "A5": {
-        "id": "104-L01",
-        "city": "桃園市",
-        "org": "61",
-        "org_name": "桃園市政府",
-        "road": "桃園市政府水務局防汛場",
-        "town": ""
-    },
-    "A6": {
-        "id": "104-L02",
-        "city": "桃園市",
-        "org": "61",
-        "org_name": "桃園市政府",
-        "road": "桃園市政府水務局防汛場",
-        "town": ""
-    },
-    "A33": {
-        "id": "北市-01",
-        "city": "台北市",
-        "org": "68",
-        "org_name": "臺北市政府",
-        "road": "臺北市中山區濱江街97號",
-        "town": "中山區"
-    },
-    # 以下可以根據PHP檔案中的完整對應關係補充其他的抽水機ID
-}
 
 
 @app.get("/")
@@ -97,7 +51,7 @@ async def get_pumps():
 
             pump_id = row["D"]
 
-            # 如果沒有ID或不在datalist中（如果datalist存在），跳過
+            # 如果沒有ID或不在datalist中（如果datalist存在且不為空），跳過
             if not pump_id or (datalist_ids and pump_id not in datalist_ids):
                 continue
 
@@ -125,7 +79,7 @@ async def get_pumps():
                 oil_value = "1"
 
             # 從映射中獲取設備資訊
-            pump_info = PUMP_MAPPINGS.get(pump_id, {})
+            pump_info = PUMP_MAPPING.get(pump_id, {})
 
             # 構建API資料
             api_data = {
