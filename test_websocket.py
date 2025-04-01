@@ -76,15 +76,19 @@ def send_http_data(pump_id=None, url="http://127.0.0.1:7000/api/simple-update"):
         "f": data["f"]
     }
 
+    # 組成完整URL
+    query_string = "&".join([f"{key}={value}" for key, value in params.items()])
+    full_url = f"{url}?{query_string}"
+
     try:
         response = requests.get(url, params=params)
         print(f"已傳送HTTP資料: {params}")
+        print(f"完整URL: {full_url}")
         print(f"接收回應: {response.text}")
         return response.text
     except Exception as e:
         print(f"HTTP請求失敗: {e}")
         return None
-
 
 def send_http_post_data(pump_id=None, url="http://127.0.0.1:7000/api/update"):
     """
@@ -128,6 +132,7 @@ async def main():
         if not pump_id:
             pump_id = None
         send_http_data(pump_id)
+        print(pump_id)
 
     elif choice == "3":
         pump_id = input("請輸入抽水機ID (按Enter使用隨機ID): ")
