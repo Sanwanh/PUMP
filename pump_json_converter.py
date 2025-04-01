@@ -354,7 +354,7 @@ def get_pump_mapping():
             "id": "苗栗縣-04",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -362,7 +362,7 @@ def get_pump_mapping():
             "id": "苗栗縣-05",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -370,7 +370,7 @@ def get_pump_mapping():
             "id": "苗栗縣-06",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -378,7 +378,7 @@ def get_pump_mapping():
             "id": "苗栗縣-07",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -386,7 +386,7 @@ def get_pump_mapping():
             "id": "苗栗縣-08",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -394,7 +394,7 @@ def get_pump_mapping():
             "id": "苗栗縣-09",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
             "town": "苗栗市"
         },
@@ -402,81 +402,81 @@ def get_pump_mapping():
             "id": "頭份鎮-01",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A93": {
             "id": "頭份鎮-02",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A94": {
             "id": "頭份鎮-03",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A95": {
             "id": "頭份鎮-04",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A96": {
             "id": "頭份鎮-05",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A97": {
             "id": "頭份鎮-06",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A98": {
             "id": "頭份鎮-07",
             "city": "苗栗縣",
             "org": "63",
-            "org_name": "苗栗縣政府", # PHP 程式碼中 org_name 應為 苗栗縣政府
+            "org_name": "苗栗縣政府",
             "road": "苗栗市經國路四段867號",
-            "town": "苗栗市" # PHP 程式碼中 town 應為 頭份鎮?
+            "town": "苗栗市"
         },
         "A116": {
             "id": "南投縣-01",
             "city": "南投縣",
             "org": "64",
-            "org_name": "南投縣南投市清潔隊", # PHP 程式碼中 org_name 為 南投縣南投市清潔隊
+            "org_name": "南投縣南投市清潔隊",
             "road": "南投縣南投市嶺興路36號",
-            "town": "南投縣" # PHP 程式碼中 town 為 南投縣，應為 南投市?
+            "town": "南投縣"
         },
         "A117": {
             "id": "南投縣-02",
             "city": "南投縣",
             "org": "64",
-            "org_name": "南投縣南投市清潔隊", # PHP 程式碼中 org_name 為 南投縣南投市清潔隊
+            "org_name": "南投縣南投市清潔隊",
             "road": "南投縣南投市嶺興路36號",
-            "town": "南投縣" # PHP 程式碼中 town 為 南投縣，應為 南投市?
+            "town": "南投縣"
         },
         "A118": {
             "id": "南投縣-03",
             "city": "南投縣",
             "org": "64",
-            "org_name": "南投縣南投市軍功橋", # PHP 程式碼中 org_name 為 南投縣南投市軍功橋
+            "org_name": "南投縣南投市軍功橋",
             "road": "南投縣南投市軍功橋",
-            "town": "南投縣" # PHP 程式碼中 town 為 南投縣，應為 南投市?
+            "town": "南投縣"
         }
 }
 

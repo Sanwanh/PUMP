@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body, Depends
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -19,12 +19,12 @@ app = FastAPI(
     redoc_url="/api-redoc",
 )
 
-
 # 設定檔案與資料夾路徑
 EXCEL_FILE = "data.xlsx"
 TEMPLATES_DIR = "templates"
 STATIC_DIR = "static"
 DATALIST_FILE = "Datalist.xlsx"
+CONFIG_FILE = "config.json"
 
 COLUMNS = ["經度", "緯度", "狀態", "D", "E", "F", "日期", "時間"]
 
@@ -46,6 +46,39 @@ class DataModel(BaseModel):
     d: str
     e: str
     f: str
+
+
+# 定義設定模型
+class SettingsModel(BaseModel):
+    display_pumps: List[str] = []
+    display_order: List[str] = []
+
+
+# 讀取設定檔案
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"無法讀取設定檔: {e}")
+
+    # 如果檔案不存在或讀取失敗，返回預設設定
+    return {
+        "display_pumps": list(PUMP_MAPPING.keys()),
+        "display_order": list(PUMP_MAPPING.keys())
+    }
+
+
+# 儲存設定檔案
+def save_config(config_data):
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config_data, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        print(f"儲存設定檔失敗: {e}")
+        return False
 
 
 # 讀取 Excel 資料
@@ -72,13 +105,18 @@ def load_datalist():
 # 將資料轉換為JSON API格式
 def convert_to_api_json(df):
     datalist_ids = load_datalist()
+    config = load_config()
     api_result = []
+
+    # 用於暫存所有抽水機資料的字典
+    all_pumps = {}
 
     for _, row in df.iterrows():
         if "D" not in df.columns:
             continue
 
-        pump_id = row["D"]
+        pump_id = str(row["D"])  # 確保ID為字串類型
+
         # 檢查是否在PUMP_MAPPING中
         if pump_id in PUMP_MAPPING:
             mapping = PUMP_MAPPING[pump_id]
@@ -123,10 +161,22 @@ def convert_to_api_json(df):
                 "_road": mapping["road"],
                 "operateat": f"{row['日期']} {row['時間']}" if "日期" in df.columns and "時間" in df.columns and row[
                     "日期"] and row["時間"] else "",
-                "_oil": oil_status
+                "_oil": oil_status,
+                "_original_id": pump_id  # 添加原始ID以便排序
             }
 
-            api_result.append(api_item)
+            all_pumps[pump_id] = api_item
+
+    # 按照設定的順序排列
+    for pump_id in config["display_order"]:
+        if pump_id in all_pumps and (not config["display_pumps"] or pump_id in config["display_pumps"]):
+            api_result.append(all_pumps[pump_id])
+
+    # 添加任何未在排序中但存在於資料中的抽水機
+    for pump_id, pump_data in all_pumps.items():
+        if pump_id not in config["display_order"] and (
+                not config["display_pumps"] or pump_id in config["display_pumps"]):
+            api_result.append(pump_data)
 
     return api_result
 
@@ -276,6 +326,46 @@ async def simple_update(lon: float, lat: float, s: str, d: str, e: str = "0", f:
         save_data(df)
         return {"status": "success", "message": message}
 
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# 設定頁面
+@app.get("/settings", response_class=HTMLResponse, tags=["系統設定"])
+async def settings_page(request: Request):
+    """
+    顯示系統設定頁面，可以配置抽水機顯示順序和顯示選項
+    """
+    config = load_config()
+    all_pumps = [{"id": k, "name": v["id"]} for k, v in PUMP_MAPPING.items()]
+
+    return templates.TemplateResponse("settings.html", {
+        "request": request,
+        "config": config,
+        "all_pumps": all_pumps,
+        "current_order": config["display_order"]
+    })
+
+
+# 保存設定
+@app.post("/api/save-settings", tags=["系統設定"])
+async def save_settings(settings: Dict = Body(...)):
+    """
+    保存系統設定
+
+    - **display_pumps**: 要顯示的抽水機ID列表
+    - **display_order**: 抽水機顯示順序
+    """
+    try:
+        config = {
+            "display_pumps": settings.get("display_pumps", []),
+            "display_order": settings.get("display_order", [])
+        }
+
+        if save_config(config):
+            return {"status": "success", "message": "設定已保存"}
+        else:
+            return {"status": "error", "message": "保存設定失敗"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 

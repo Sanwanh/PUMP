@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽水機監控系統 - 設定</title>
+    <style>
+        body {
+            font-family: "Segoe UI", "微軟正黑體", sans-serif;
+            background-color: #f4f7f9;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-link {
+            background-color: #2196F3;
+        }
+        .btn-link:hover {
+            background-color: #0b7dda;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .action-buttons .btn {
+            margin-left: 10px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-links {
+            display: flex;
+        }
+        .header-links a {
+            margin-left: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .sortable-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sortable-item {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sortable-item:hover {
+            background-color: #e9e9e9;
+        }
+        .sortable-item .item-id {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .sortable-item .item-name {
+            color: #666;
+            flex-grow: 1;
+        }
+        .sortable-item .handle {
+            cursor: move;
+            color: #999;
+            margin-left: 10px;
+        }
+        .checkbox-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .checkbox-item {
+            padding: 8px;
+            margin-bottom: 3px;
+            border-radius: 4px;
+        }
+        .checkbox-item:hover {
+            background-color: #f9f9f9;
+        }
+        .checkbox-item label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .search-box {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+    </style>
+    <!-- Sortable.js 函式庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>抽水機監控系統設定</h1>
+            <div class="header-links">
+                <a href="/" class="btn btn-link">資料主頁</a>
+                <a href="/api/json" class="btn btn-link">JSON API</a>
+            </div>
+        </div>
+
+        <div id="message-success" class="message message-success"></div>
+        <div id="message-error" class="message message-error"></div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>抽水機顯示選項</h2>
+                <p>選擇要在系統中顯示的抽水機</p>
+
+                <input type="text" id="pump-search" class="search-box" placeholder="搜尋抽水機 ID 或名稱...">
+
+                <div class="checkbox-list">
+                    <!-- 抽水機列表將由JavaScript動態生成 -->
+                </div>
+
+                <div class="action-buttons">
+                    <button id="select-all" class="btn">全選</button>
+                    <button id="deselect-all" class="btn btn-danger">取消全選</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>顯示順序設定</h2>
+                <p>拖曳調整抽水機顯示順序</p>
+
+                <ul id="sortable-pumps" class="sortable-list">
+                    <!-- 可排序的抽水機列表將由JavaScript動態生成 -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="reset-settings" class="btn btn-danger">重設為預設值</button>
+            <button id="save-settings" class="btn">儲存設定</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>處理中，請稍候...</p>
+        </div>
+    </div>
+
+    <script>
+        // 當頁面載入完成時執行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化設定
+            const allPumps = {{ all_pumps|tojson }};
+            let currentConfig = {{ config|tojson }};
+            let displayPumps = currentConfig.display_pumps || [];
+            let displayOrder = currentConfig.display_order || [];
+
+            // 搜尋功能
+            const searchInput = document.getElementById('pump-search');
+            searchInput.addEventListener('input', function() {
+                renderCheckboxList();
+            });
+
+            // 全選按鈕
+            document.getElementById('select-all').addEventListener('click', function() {
+                displayPumps = allPumps.map(pump => pump.id);
+                renderCheckboxList();
+                renderSortableList();
+            });
+
+            // 取消全選按鈕
+            document.getElementById('deselect-all').addEventListener('click', function() {
+                displayPumps = [];
+                renderCheckboxList();
+                renderSortableList();
+            });
+
+            // 重設按鈕
+            document.getElementById('reset-settings').addEventListener('click', function() {
+                if (confirm('確定要重設所有設定為預設值嗎？這將顯示所有抽水機並使用預設排序。')) {
+                    displayPumps = allPumps.map(pump => pump.id);
+                    displayOrder = [...displayPumps];
+                    renderCheckboxList();
+                    renderSortableList();
+                }
+            });
+
+            // 儲存設定按鈕
+            document.getElementById('save-settings').addEventListener('click', function() {
+                saveSettings();
+            });
+
+            // 顯示訊息函數
+            function showMessage(type, message) {
+                const element = document.getElementById(`message-${type}`);
+                element.textContent = message;
+                element.style.display = 'block';
+
+                // 5秒後自動隱藏
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+
+            // 初始化排序功能
+            const sortableList = document.getElementById('sortable-pumps');
+            const sortable = new Sortable(sortableList, {
+                animation: 150,
+                handle: '.handle',
+                onEnd: function() {
+                    // 排序結束後更新顯示順序
+                    updateDisplayOrder();
+                }
+            });
+
+            // 更新顯示順序
+            function updateDisplayOrder() {
+                const items = sortableList.querySelectorAll('.sortable-item');
+                displayOrder = Array.from(items).map(item => item.getAttribute('data-id'));
+            }
+
+            // 生成可排序列表
+            function renderSortableList() {
+                sortableList.innerHTML = '';
+
+                // 按照目前的排序顯示
+                const orderedPumps = [];
+
+                // 首先添加已經在排序中的泵
+                displayOrder.forEach(id => {
+                    if (displayPumps.includes(id)) {
+                        const pump = allPumps.find(p => p.id === id);
+                        if (pump) {
+                            orderedPumps.push(pump);
+                        }
+                    }
+                });
+
+                // 然後添加被勾選但尚未排序的泵
+                displayPumps.forEach(id => {
+                    if (!displayOrder.includes(id)) {
+                        const pump = allPumps.find(p => p.id === id);
+                        if (pump) {
+                            orderedPumps.push(pump);
+                        }
+                    }
+                });
+
+                // 創建排序項目
+                orderedPumps.forEach(pump => {
+                    const item = document.createElement('li');
+                    item.className = 'sortable-item';
+                    item.setAttribute('data-id', pump.id);
+                    item.innerHTML = `
+                        <span class="item-id">${pump.id}</span>
+                        <span class="item-name">${pump.name}</span>
+                        <span class="handle">⋮⋮</span>
+                    `;
+                    sortableList.appendChild(item);
+                });
+
+                // 更新排序順序
+                updateDisplayOrder();
+            }
+
+            // 生成抽水機複選框列表
+            function renderCheckboxList() {
+                const checkboxList = document.querySelector('.checkbox-list');
+                checkboxList.innerHTML = '';
+
+                // 獲取搜尋值
+                const searchValue = document.getElementById('pump-search').value.toLowerCase();
+
+                // 過濾並排序抽水機列表
+                const filteredPumps = allPumps
+                    .filter(pump => {
+                        if (searchValue) {
+                            return pump.id.toLowerCase().includes(searchValue) ||
+                                pump.name.toLowerCase().includes(searchValue);
+                        }
+                        return true;
+                    })
+                    .sort((a, b) => {
+                        // 自然排序，處理A1, A2, A10等
+                        const idA = a.id;
+                        const idB = b.id;
+
+                        if (idA.charAt(0) === idB.charAt(0)) {
+                            // 相同字母開頭，比較數字部分
+                            const numA = parseInt(idA.substring(1), 10);
+                            const numB = parseInt(idB.substring(1), 10);
+                            return numA - numB;
+                        }
+
+                        return idA.localeCompare(idB);
+                    });
+
+                // 渲染過濾後的抽水機列表
+                filteredPumps.forEach(pump => {
+                    const isChecked = displayPumps.includes(pump.id);
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `
+                        <label>
+                            <input type="checkbox" value="${pump.id}" ${isChecked ? 'checked' : ''}>
+                            <span class="item-id">${pump.id}</span>
+                            <span class="item-name">${pump.name}</span>
+                        </label>
+                    `;
+
+                    // 添加點擊事件處理
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            if (!displayPumps.includes(pump.id)) {
+                                displayPumps.push(pump.id);
+                            }
+                        } else {
+                            displayPumps = displayPumps.filter(id => id !== pump.id);
+                        }
+                        renderSortableList();
+                    });
+
+                    checkboxList.appendChild(item);
+                });
+            }
+
+            // 儲存設定函數
+            async function saveSettings() {
+                // 顯示讀取中
+                document.getElementById('loading').style.display = 'flex';
+
+                try {
+                    const response = await fetch('/api/save-settings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            display_pumps: displayPumps,
+                            display_order: displayOrder
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showMessage('success', '設定已成功儲存！');
+                    } else {
+                        showMessage('error', `儲存設定失敗: ${result.message}`);
+                    }
+                } catch (error) {
+                    showMessage('error', `儲存設定發生錯誤: ${error.message}`);
+                } finally {
+                    // 隱藏讀取中
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }
+
+            // 初始渲染
+            renderCheckboxList();
+            renderSortableList();
+        });
+    </script>
+</body>
+</html>

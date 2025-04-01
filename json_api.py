@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from datetime import datetime
 import uvicorn
+import json
 from pump_mappings import PUMP_MAPPING, STATUS_MAPPING
 
 app = FastAPI()
@@ -11,6 +12,23 @@ app = FastAPI()
 # 設定檔案路徑
 EXCEL_FILE = "data.xlsx"
 DATALIST_FILE = "Datalist.xlsx"
+CONFIG_FILE = "config.json"
+
+
+# 讀取設定檔案
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"無法讀取設定檔: {e}")
+
+    # 如果檔案不存在或讀取失敗，返回預設設定
+    return {
+        "display_pumps": list(PUMP_MAPPING.keys()),
+        "display_order": list(PUMP_MAPPING.keys())
+    }
 
 
 @app.get("/")
@@ -40,8 +58,13 @@ async def get_pumps():
         except Exception as e:
             print(f"警告: 無法讀取 {DATALIST_FILE}, 錯誤: {e}")
 
+        # 讀取設定檔
+        config = load_config()
+        display_pumps = config.get("display_pumps", [])
+        display_order = config.get("display_order", [])
+
         # 準備結果資料
-        result_data = []
+        all_pumps = {}
 
         # 處理每一筆抽水機資料
         for _, row in df.iterrows():
@@ -49,10 +72,14 @@ async def get_pumps():
             if "D" not in df.columns:
                 continue
 
-            pump_id = row["D"]
+            pump_id = str(row["D"])  # 確保ID為字串類型
 
             # 如果沒有ID或不在datalist中（如果datalist存在且不為空），跳過
             if not pump_id or (datalist_ids and pump_id not in datalist_ids):
+                continue
+
+            # 如果不在顯示列表中，跳過
+            if display_pumps and pump_id not in display_pumps:
                 continue
 
             # 獲取狀態值
@@ -94,10 +121,24 @@ async def get_pumps():
                 "_road": pump_info.get("road", ""),
                 "operateat": f"{row['日期']} {row['時間']}" if "日期" in df.columns and "時間" in df.columns and row[
                     "日期"] and row["時間"] else "",
-                "_oil": oil_value
+                "_oil": oil_value,
+                "_original_id": pump_id  # 添加原始ID以便排序
             }
 
-            result_data.append(api_data)
+            all_pumps[pump_id] = api_data
+
+        # 按照設定的順序排列結果
+        result_data = []
+
+        # 先添加已在顯示順序中的泵
+        for pump_id in display_order:
+            if pump_id in all_pumps:
+                result_data.append(all_pumps[pump_id])
+
+        # 再添加其餘的泵
+        for pump_id, pump_data in all_pumps.items():
+            if pump_id not in display_order:
+                result_data.append(pump_data)
 
         return JSONResponse(content=result_data)
 
