@@ -14,6 +14,12 @@
             text-align: center;
             color: #333;
         }
+        #update-time {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -38,40 +44,74 @@
         tr:hover {
             background-color: #e8f5e9;
         }
+        tbody tr {
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
     </style>
     <script>
+        let lastDataHash = '';
+
+        function hashData(data) {
+            return JSON.stringify(data);
+        }
+
+        function formatTime() {
+            const now = new Date();
+            return now.toLocaleTimeString();
+        }
+
         async function fetchData() {
             try {
                 const response = await fetch("/api/data");
                 const data = await response.json();
 
+                const newDataHash = hashData(data);
+                if (newDataHash === lastDataHash) {
+                    // 資料沒有變，不更新
+                    console.log("資料未變動");
+                    return;
+                }
+                lastDataHash = newDataHash;
+
                 const tableBody = document.querySelector("#data-table tbody");
-                tableBody.innerHTML = "";
+                const fragment = document.createDocumentFragment();
 
                 data.forEach(item => {
-                    const row = `
-                        <tr>
-                            <td>${item['經度']}</td>
-                            <td>${item['緯度']}</td>
-                            <td>${item['狀態']}</td>
-                            <td>${item['D']}</td>
-                            <td>${item['E']}</td>
-                            <td>${item['F']}</td>
-                            <td>${item['日期']}</td>
-                            <td>${item['時間']}</td>
-                        </tr>`;
-                    tableBody.innerHTML += row;
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item['經度']}</td>
+                        <td>${item['緯度']}</td>
+                        <td>${item['狀態']}</td>
+                        <td>${item['D']}</td>
+                        <td>${item['E']}</td>
+                        <td>${item['F']}</td>
+                        <td>${item['日期']}</td>
+                        <td>${item['時間']}</td>
+                    `;
+                    fragment.appendChild(row);
                 });
+
+                tableBody.innerHTML = "";
+                tableBody.appendChild(fragment);
+
+                // 更新時間提示
+                const timeLabel = document.getElementById("update-time");
+                timeLabel.textContent = `最後更新時間：${formatTime()}`;
+
             } catch (error) {
-                console.error("Failed to fetch data:", error);
+                console.error("資料取得失敗:", error);
             }
         }
 
-        window.onload = fetchData;
+        window.onload = () => {
+            fetchData();
+            setInterval(fetchData, 5000); // 每 5 秒檢查
+        };
     </script>
 </head>
 <body>
     <h1>📄 資料列表</h1>
+    <div id="update-time">最後更新時間：尚未更新</div>
     <table id="data-table">
         <thead>
             <tr>
