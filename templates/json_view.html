@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽水機系統 - JSON API</title>
+    <style>
+        body {
+            font-family: "Segoe UI", "微軟正黑體", sans-serif;
+            background-color: #f4f5f7;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #1f4287;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header a {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header a:hover {
+            background-color: #45a049;
+        }
+        .json-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        #json-view {
+            white-space: pre-wrap;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        .api-url {
+            background-color: #e9f7fe;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #1f4287;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: white;
+        }
+        .status-offline { background-color: #ff6b6b; }
+        .status-standby { background-color: #4dabf7; }
+        .status-moving { background-color: #f783ac; }
+        .status-pumping { background-color: #51cf66; }
+        .status-error { background-color: #fcc419; }
+        .status-low-oil { background-color: #be4bdb; }
+
+        #refresh-btn {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #refresh-btn:hover {
+            background-color: #3a56d4;
+        }
+
+        .status-count {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>抽水機系統 - JSON API</h1>
+            <a href="/">返回資料表</a>
+        </div>
+
+        <div class="card">
+            <h3>API 端點</h3>
+            <div class="api-url">
+                <div>JSON API 網址：<span id="api-url"></span></div>
+            </div>
+            <button id="refresh-btn">重新整理資料</button>
+        </div>
+
+        <div class="card">
+            <h3>抽水機狀態統計</h3>
+            <div class="status-count" id="status-count">
+                <!-- 狀態統計將由JavaScript動態生成 -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>抽水機列表</h3>
+            <table id="pump-table">
+                <thead>
+                    <tr>
+                        <th>機器ID</th>
+                        <th>縣市</th>
+                        <th>行政區</th>
+                        <th>狀態</th>
+                        <th>油位</th>
+                        <th>位置</th>
+                        <th>最後更新</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 表格將由JavaScript動態生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="json-container">
+            <h2>原始 JSON 資料</h2>
+            <pre id="json-view">載入中...</pre>
+        </div>
+    </div>
+
+    <script>
+        // 當頁面載入完成時執行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 設定API URL
+            const apiEndpoint = '/api/json';
+            const fullUrl = window.location.origin + apiEndpoint;
+            document.getElementById('api-url').textContent = fullUrl;
+
+            // 載入JSON資料
+            fetchApiData();
+
+            // 設定重新整理按鈕
+            document.getElementById('refresh-btn').addEventListener('click', fetchApiData);
+        });
+
+        // 獲取狀態樣式類別
+        function getStatusClass(status) {
+            const statusMap = {
+                '離線': 'status-offline',
+                '待命': 'status-standby',
+                '運送中': 'status-moving',
+                '抽水中': 'status-pumping',
+                '故障': 'status-error',
+                '油位低電壓': 'status-low-oil'
+            };
+            return statusMap[status] || 'status-offline';
+        }
+
+        // 獲取狀態指示點的顏色
+        function getStatusColor(status) {
+            const colorMap = {
+                '離線': '#ff6b6b',
+                '待命': '#4dabf7',
+                '運送中': '#f783ac',
+                '抽水中': '#51cf66',
+                '故障': '#fcc419',
+                '油位低電壓': '#be4bdb'
+            };
+            return colorMap[status] || '#ff6b6b';
+        }
+
+        // 獲取API資料
+        async function fetchApiData() {
+            try {
+                const response = await fetch('/api/json');
+                const data = await response.json();
+
+                // 顯示原始JSON
+                document.getElementById('json-view').textContent = JSON.stringify(data, null, 2);
+
+                // 更新表格
+                updatePumpTable(data);
+
+                // 更新狀態統計
+                updateStatusCount(data);
+            } catch (error) {
+                console.error('獲取API資料失敗:', error);
+                document.getElementById('json-view').textContent = '獲取資料失敗: ' + error.message;
+            }
