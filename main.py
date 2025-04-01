@@ -182,13 +182,46 @@ def convert_to_api_json(df):
 
 
 # 主頁顯示資料表
+# 主頁顯示資料表
 @app.get("/", response_class=HTMLResponse)
 async def read_data(request: Request):
     df = load_data()
     if df.empty:
         df = pd.DataFrame([{col: "" for col in COLUMNS}])  # 空表時自動填一行空資料
-    data = df.to_dict(orient="records")
-    return templates.TemplateResponse("index.html", {"request": request, "data": data})
+
+    # 讀取設定檔以獲取顯示順序
+    config = load_config()
+    display_pumps = config.get("display_pumps", [])
+    display_order = config.get("display_order", [])
+
+    # 轉換為字典列表
+    raw_data = df.to_dict(orient="records")
+
+    # 用於儲存排序後的資料
+    ordered_data = []
+
+    # 建立一個ID到資料行的映射
+    data_map = {}
+    for row in raw_data:
+        if "D" in row and row["D"]:
+            pump_id = str(row["D"])
+            data_map[pump_id] = row
+
+    # 首先添加顯示順序中的項目
+    for pump_id in display_order:
+        if pump_id in data_map and (not display_pumps or pump_id in display_pumps):
+            ordered_data.append(data_map[pump_id])
+
+    # 然後添加未在顯示順序中但應該顯示的項目
+    for pump_id, row in data_map.items():
+        if pump_id not in display_order and (not display_pumps or pump_id in display_pumps):
+            ordered_data.append(row)
+
+    # 如果沒有資料，使用原始資料
+    if not ordered_data:
+        ordered_data = raw_data
+
+    return templates.TemplateResponse("index.html", {"request": request, "data": ordered_data})
 
 
 # 提供資料 API
@@ -215,6 +248,14 @@ async def get_json_api():
 
     api_data = convert_to_api_json(df)
     return api_data
+
+# 提供設定檔 API
+@app.get("/api/config", tags=["系統設定"])
+async def get_config():
+    """
+    獲取系統設定，包含顯示選項和排序
+    """
+    return load_config()
 
 
 # JSON資料顯示頁面 (純JSON顯示)

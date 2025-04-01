@@ -47,6 +47,27 @@
         tbody tr {
             transition: background-color 0.3s ease, opacity 0.3s ease;
         }
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
     </style>
     <script>
         let lastDataHash = '';
@@ -63,7 +84,14 @@
         async function fetchData() {
             try {
                 const response = await fetch("/api/data");
-                const data = await response.json();
+                let data = await response.json();
+
+                // 在這裡獲取設定檔的顯示順序
+                const configResponse = await fetch("/api/config");
+                const config = await configResponse.json();
+
+                // 對資料進行排序處理
+                data = sortDataByConfig(data, config);
 
                 const newDataHash = hashData(data);
                 if (newDataHash === lastDataHash) {
@@ -103,6 +131,43 @@
             }
         }
 
+        // 根據設定排序資料
+        function sortDataByConfig(data, config) {
+            const displayPumps = config.display_pumps || [];
+            const displayOrder = config.display_order || [];
+
+            // 如果沒有設定，直接返回原始資料
+            if (!displayOrder.length) return data;
+
+            // 建立一個ID到資料行的映射
+            const dataMap = {};
+            data.forEach(item => {
+                if (item.D) {
+                    dataMap[item.D] = item;
+                }
+            });
+
+            // 用於存放排序後的資料
+            const orderedData = [];
+
+            // 首先添加顯示順序中的項目
+            displayOrder.forEach(pumpId => {
+                if (dataMap[pumpId] && (!displayPumps.length || displayPumps.includes(pumpId))) {
+                    orderedData.push(dataMap[pumpId]);
+                }
+            });
+
+            // 然後添加未在顯示順序中但應該顯示的項目
+            data.forEach(item => {
+                if (item.D && !displayOrder.includes(item.D) && (!displayPumps.length || displayPumps.includes(item.D))) {
+                    orderedData.push(item);
+                }
+            });
+
+            // 如果沒有排序出資料，返回原始資料
+            return orderedData.length ? orderedData : data;
+        }
+
         window.onload = () => {
             fetchData();
             setInterval(fetchData, 5000); // 每 5 秒檢查
@@ -111,7 +176,12 @@
 </head>
 <body>
     <h1>📄 資料列表</h1>
-    <div id="update-time">最後更新時間：尚未更新</div>
+
+    <div class="header-actions">
+        <div id="update-time">最後更新時間：尚未更新</div>
+        <a href="/settings" class="btn">設定顯示順序</a>
+    </div>
+
     <table id="data-table">
         <thead>
             <tr>
