@@ -13,6 +13,8 @@ from pump_mappings import PUMP_MAPPING, STATUS_MAPPING
 
 app = FastAPI()
 
+#大家好我是易成
+
 # 設定檔案與資料夾路徑
 EXCEL_FILE = "data.xlsx"
 TEMPLATES_DIR = "templates"
