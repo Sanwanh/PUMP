@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料顯示</title>
+    <style>
+        body {
+            font-family: "Segoe UI", "微軟正黑體", sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e8f5e9;
+        }
+    </style>
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch("/api/data");
+                const data = await response.json();
+
+                const tableBody = document.querySelector("#data-table tbody");
+                tableBody.innerHTML = "";
+
+                data.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td>${item['經度']}</td>
+                            <td>${item['緯度']}</td>
+                            <td>${item['狀態']}</td>
+                            <td>${item['D']}</td>
+                            <td>${item['E']}</td>
+                            <td>${item['F']}</td>
+                            <td>${item['日期']}</td>
+                            <td>${item['時間']}</td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            }
+        }
+
+        window.onload = fetchData;
+    </script>
+</head>
+<body>
+    <h1>📄 資料列表</h1>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>經度</th>
+                <th>緯度</th>
+                <th>狀態</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>日期</th>
+                <th>時間</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 資料將透過 JavaScript 動態填入 -->
+        </tbody>
+    </table>
+</body>
+</html>
