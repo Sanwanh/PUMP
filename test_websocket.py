@@ -132,7 +132,6 @@ async def main():
         if not pump_id:
             pump_id = None
         send_http_data(pump_id)
-        print(pump_id)
 
     elif choice == "3":
         pump_id = input("請輸入抽水機ID (按Enter使用隨機ID): ")
