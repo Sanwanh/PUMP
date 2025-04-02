@@ -14,5 +14,13 @@ services:
       - ./data:/app/data
       - ./config.json:/app/config.json
       - ./pumps.json:/app/pumps.json
+      - ./data.xlsx:/app/data.xlsx
+      - ./Datalist.xlsx:/app/Datalist.xlsx
     environment:
       - TZ=Asia/Taipei
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
