@@ -24,7 +24,7 @@
 #define REG_ADDR 0x32    // 震動感測器數據寄存器
 #define DATA_LEN 6       // 震動感測器數據長度
 
-#define SERVER_IP "120.119.155.138" // 伺服器IP
+#define SERVER_IP "120.119.157.89" // 伺服器IP
 #define SERVER_PORT 7000            // 伺服器埠 - 改為7000以匹配main.py中的端口
 #define DEVICE_ID "A27"             // 裝置ID
 
