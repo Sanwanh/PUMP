@@ -23,6 +23,8 @@
 ├── pumps.json             # 抽水機資料JSON檔案
 ├── README.md              # 說明文件
 ├── requirements.txt       # 程式相依套件
+├── Dockerfile             # Docker 建構檔案
+├── docker-compose.yml     # Docker Compose 配置檔案
 ├── .idea/                 # PyCharm專案設定資料夾
 │   └── ...
 ├── templates/             # 前端頁面
@@ -60,6 +62,7 @@
 
 - Python 3.9 或更高版本
 - 相依套件：參見 `requirements.txt`
+- Docker 和 Docker Compose (如使用容器化部署)
 
 ### 安裝步驟
 
@@ -81,6 +84,8 @@
 
 ### 啟動系統
 
+#### 方法一：直接使用 Python
+
 執行以下命令啟動系統：
 
 ```bash
@@ -88,6 +93,50 @@ python main.py
 ```
 
 系統預設會在 `http://localhost:7000` 啟動，您可以通過瀏覽器訪問此地址。
+
+#### 方法二：使用 Docker Compose
+
+如果您已安裝 Docker 和 Docker Compose，可以使用容器化方式啟動系統，這樣不需要自行安裝 Python 和相依套件。
+
+1. **啟動系統**：
+   ```bash
+   docker-compose up -d
+   ```
+   `-d` 參數表示在背景執行容器。
+
+2. **查看容器狀態**：
+   ```bash
+   docker-compose ps
+   ```
+   
+3. **查看日誌**：
+   ```bash
+   docker-compose logs -f
+   ```
+   `-f` 參數表示持續顯示新的日誌。
+
+4. **重新啟動服務**：
+   ```bash
+   docker-compose restart
+   ```
+
+5. **停止服務**：
+   ```bash
+   docker-compose down
+   ```
+
+使用 Docker Compose 方式啟動後，系統同樣會在 `http://localhost:7000` 啟動，可透過瀏覽器訪問。
+
+### 容器數據持久化
+
+Docker Compose 設定中已經配置了數據持久化，相關文件映射如下：
+- `./data:/app/data` - 數據存儲目錄
+- `./config.json:/app/config.json` - 系統設定檔
+- `./pumps.json:/app/pumps.json` - 抽水機資料檔案
+- `./data.xlsx:/app/data.xlsx` - Excel資料檔案
+- `./Datalist.xlsx:/app/Datalist.xlsx` - 抽水機列表檔案
+
+所有資料變更都會實時保存到本地文件，即使容器重啟也不會丟失數據。
 
 ### 頁面說明
 
@@ -240,9 +289,16 @@ python test_websocket.py
    - 確認 `config.json` 檔案可寫入
    - 檢查錯誤訊息
 
+5. **Docker 相關問題**
+   - **容器無法啟動**: 檢查錯誤日誌 `docker-compose logs`
+   - **端口被佔用**: 確認 7000 端口未被其他程序佔用，或在 `docker-compose.yml` 中修改端口映射
+   - **容器啟動但無法訪問**: 檢查防火牆設定，確保允許 7000 端口通信
+
 ### 日誌檢查
 
-如需檢查系統日誌，請查看執行 `main.py` 時的終端機輸出。系統會輸出關鍵操作的日誌訊息。
+如需檢查系統日誌：
+- 直接執行方式：查看執行 `main.py` 時的終端機輸出
+- Docker 方式：使用 `docker-compose logs -f pump-monitor` 查看容器日誌
 
 ## 擴展和客製化
 
@@ -277,6 +333,12 @@ python test_websocket.py
 2. 更新相依套件：
    ```bash
    pip install -r requirements.txt --upgrade
+   ```
+
+3. 更新 Docker 鏡像與容器：
+   ```bash
+   docker-compose pull  # 如果使用遠端鏡像
+   docker-compose up -d --build  # 重新構建並啟動
    ```
 
 ## 聯絡方式
