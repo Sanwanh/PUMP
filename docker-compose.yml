@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  pump-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pump-monitor:latest
+    container_name: pump-monitor
+    restart: always
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+      - ./pumps.json:/app/pumps.json
+    environment:
+      - TZ=Asia/Taipei
