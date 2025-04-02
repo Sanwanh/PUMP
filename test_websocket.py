@@ -15,7 +15,7 @@ DEFAULT_TEST_DATA = {
         "e": "1",  # 油位正常
         "f": "12.5"
     },
-    "A1": {  # 北市-09
+    "A35": {  # 北市-09
         "longitude": 121.498,
         "latitude": 25.0921,
         "status": "3",  # 抽水中
@@ -23,7 +23,7 @@ DEFAULT_TEST_DATA = {
         "e": "1",  # 油位正常
         "f": "10.2"
     },
-    "A5": {  # 104-L01
+    "A36": {  # 104-L01
         "longitude": 121.324,
         "latitude": 24.9876,
         "status": "2",  # 運送中
@@ -56,7 +56,7 @@ async def send_websocket_data(pump_id=None, websocket_url="ws://127.0.0.1:7000/w
         return None
 
 
-def send_http_data(pump_id=None, url="http://127.0.0.1:7000/api/simple-update"):
+def send_http_data(pump_id=None, url="http://120.119.157.89:7000/api/simple-update"):
     """
     通過HTTP GET請求發送抽水機數據 (適合SIM7000等裝置)
     """
