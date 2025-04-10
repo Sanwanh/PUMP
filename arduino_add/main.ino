@@ -128,12 +128,14 @@ void loop()
   // 更新系統狀態
   updateSystemStatus();
 
+  lastSendTime = millis();
+
   // 發送數據
-  if (millis() - lastSendTime >= DATA_SEND_INTERVAL)
-  {
-    sendDataToServer();
-    lastSendTime = millis();
-  }
+//   if (millis() - lastSendTime >= DATA_SEND_INTERVAL)
+//   {
+//     sendDataToServer();
+//     lastSendTime = millis();
+//   }
 }
 
 /**
