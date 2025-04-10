@@ -115,12 +115,12 @@ void loop()
 
   // 計數器管理
   resetCounter++;
-  if (resetCounter >= WDT_RESET_COUNT)
-  {
-    resetCounter = 0;
-    // 短時看門狗重啟系統
-    systemReset();
-  }
+  // if (resetCounter >= WDT_RESET_COUNT)
+  // {
+  //   resetCounter = 0;
+  //   // 短時看門狗重啟系統
+  //   systemReset();
+  // }
 
   // 讀取所有傳感器數據
   readSensors();
@@ -130,6 +130,7 @@ void loop()
 
   lastSendTime = millis();
 
+  sendDataToServer();
   // 發送數據
 //   if (millis() - lastSendTime >= DATA_SEND_INTERVAL)
 //   {
@@ -146,7 +147,7 @@ bool initSIM7000()
   // 關閉模組後重新啟動
   sim7000.begin(sim7000Serial);
   sim7000.turnOFF();
-  delay(5000);
+//   delay(5000);
 
   Serial.println(F("啟動SIM7000..."));
   if (!sim7000.turnON())
