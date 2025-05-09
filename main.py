@@ -15,8 +15,10 @@ app = FastAPI(
     title="抽水機監控系統",
     description="用於監控抽水機狀態的系統，可以接收抽水機傳來的資料並提供JSON API",
     version="1.0.0",
-    docs_url="/api-docs",
-    redoc_url="/api-redoc",
+    docs_url=None,  # 關閉 Swagger UI
+    redoc_url=None,  # 關閉 ReDoc
+    # docs_url="/api-docs",
+    # redoc_url="/api-redoc",
 )
 
 # 設定檔案與資料夾路徑
