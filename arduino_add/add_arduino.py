@@ -41,7 +41,7 @@ def main():
 
     # 在範圍內生成多個Arduino檔案
     for i in range(start_id, end_id + 1):
-        device_id = f"A{i:02d}"  # 格式化裝置ID為Axx格式
+        device_id = f"A{i}"  # 不要補零，A1、A2…A10、A11… # 格式化裝置ID為Axx格式
         
         # 建立裝置專屬目錄
         device_directory = os.path.join(base_directory, device_id + "_4G")
